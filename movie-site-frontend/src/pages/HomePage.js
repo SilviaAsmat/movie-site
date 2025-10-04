@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import MediaCard from "../components/MediaCard";
+import LoadingSkeleton from "../components/LoadingSkeleton";
 import { getPopularMovies, getPopularTVShows } from "../services/api";
 
 const HomePage = () => {
@@ -13,7 +14,6 @@ const HomePage = () => {
       try {
         setLoading(true);
 
-        // Fetch both movies and TV shows in parallel
         const [moviesData, tvData] = await Promise.all([
           getPopularMovies(),
           getPopularTVShows(),
@@ -31,11 +31,7 @@ const HomePage = () => {
     };
 
     fetchData();
-  }, []); // Empty array means this runs once when component mounts
-
-  if (loading) {
-    return <div style={styles.loading}>Loading...</div>;
-  }
+  }, []);
 
   if (error) {
     return <div style={styles.error}>{error}</div>;
@@ -45,20 +41,28 @@ const HomePage = () => {
     <div style={styles.container}>
       <section style={styles.section}>
         <h2 style={styles.heading}>Popular Movies</h2>
-        <div style={styles.grid}>
-          {movies.slice(0, 12).map((movie) => (
-            <MediaCard key={movie.id} media={movie} mediaType="movie" />
-          ))}
-        </div>
+        {loading ? (
+          <LoadingSkeleton count={12} />
+        ) : (
+          <div style={styles.grid}>
+            {movies.slice(0, 12).map((movie) => (
+              <MediaCard key={movie.id} media={movie} mediaType="movie" />
+            ))}
+          </div>
+        )}
       </section>
 
       <section style={styles.section}>
         <h2 style={styles.heading}>Popular TV Shows</h2>
-        <div style={styles.grid}>
-          {tvShows.slice(0, 12).map((show) => (
-            <MediaCard key={show.id} media={show} mediaType="tv" />
-          ))}
-        </div>
+        {loading ? (
+          <LoadingSkeleton count={12} />
+        ) : (
+          <div style={styles.grid}>
+            {tvShows.slice(0, 12).map((show) => (
+              <MediaCard key={show.id} media={show} mediaType="tv" />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -74,7 +78,7 @@ const styles = {
     marginBottom: "40px",
   },
   heading: {
-    color: "#2826baff",
+    color: "#fff",
     fontSize: "24px",
     marginBottom: "20px",
   },
@@ -82,12 +86,6 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
     gap: "20px",
-  },
-  loading: {
-    color: "#fff",
-    textAlign: "center",
-    padding: "40px",
-    fontSize: "20px",
   },
   error: {
     color: "#e50914",
